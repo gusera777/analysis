@@ -1,7 +1,7 @@
 {
   "name": "Trader Cerdas Indonesia",
   "short_name": "TCID",
-  "start_url": "V1",
+  "start_url": "/V1/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
