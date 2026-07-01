@@ -710,24 +710,118 @@ font-weight: 600;
 STATUS BAR
 ================================================================ */
 .status-bar {
-display: flex;
-align-items: flex-start;
-gap: 8px;
 margin-top: 12px;
-padding: 10px 12px;
+padding: 12px 14px;
 background: var(--bg-elevated);
 border: 1px solid var(--border-dim);
 border-radius: var(--r-sm);
 font-family: var(--font-mono);
-font-size: 10px;
-line-height: 1.7;
+font-size: 11px;
+line-height: 1.6;
 color: var(--txt-muted);
 min-height: 38px;
 transition: all 0.2s var(--ease);
 word-break: break-word;
 }
-.status-bar.ok { color: var(--up); border-color: rgba(0,212,160,0.18); background: rgba(0,212,160,0.04); }
+
+/* Idle / placeholder state — sebelum data pernah di-fetch */
+.status-bar.idle {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 7px;
+padding: 13px 14px;
+border-style: dashed;
+border-color: var(--border-dim);
+background: transparent;
+font-family: var(--font-body);
+font-size: 11px;
+font-weight: 500;
+letter-spacing: 0.4px;
+text-transform: uppercase;
+color: var(--txt-muted);
+}
+.status-bar.idle::before {
+content: '⚡';
+font-size: 11px;
+opacity: 0.7;
+}
+
+/* Simple one-line feedback (fetching / plain error) */
+.status-bar.simple {
+display: flex;
+align-items: flex-start;
+gap: 8px;
+}
+
 .status-bar.err { color: var(--down); border-color: rgba(255,78,106,0.18); background: rgba(255,78,106,0.04); }
+
+/* Structured result — swing high/low rows + trend/EMA/confirmation badges */
+.swing-result-rows {
+display: flex;
+flex-direction: column;
+gap: 6px;
+}
+
+.swing-result-row {
+display: flex;
+align-items: baseline;
+justify-content: space-between;
+gap: 10px;
+}
+
+.swing-result-label {
+font-family: var(--font-body);
+font-size: 9.5px;
+font-weight: 600;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: var(--txt-muted);
+flex-shrink: 0;
+}
+
+.swing-result-value {
+font-family: var(--font-mono);
+font-size: 13px;
+font-weight: 600;
+color: var(--txt-primary);
+text-align: right;
+}
+
+.swing-result-time {
+display: block;
+margin-top: 1px;
+font-size: 9.5px;
+font-weight: 400;
+color: var(--txt-muted);
+}
+
+.swing-result-badges {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+margin-top: 10px;
+padding-top: 10px;
+border-top: 1px solid var(--border-dim);
+}
+
+.result-badge {
+display: inline-flex;
+align-items: center;
+gap: 4px;
+padding: 3px 9px;
+border-radius: 20px;
+font-family: var(--font-body);
+font-size: 10px;
+font-weight: 600;
+letter-spacing: 0.2px;
+white-space: nowrap;
+}
+.result-badge.tone-up { color: var(--up); background: var(--up-dim); border: 1px solid rgba(0,212,160,0.22); }
+.result-badge.tone-down { color: var(--down); background: var(--down-dim); border: 1px solid rgba(255,78,106,0.22); }
+.result-badge.tone-info { color: var(--info); background: rgba(91,156,246,0.08); border: 1px solid rgba(91,156,246,0.22); }
+.result-badge.tone-warn { color: var(--warn); background: rgba(240,160,48,0.09); border: 1px solid rgba(240,160,48,0.24); }
+.result-badge.tone-muted { color: var(--txt-secondary); background: var(--bg-overlay); border: 1px solid var(--border-dim); }
 
 /* ================================================================
 OUTPUT
