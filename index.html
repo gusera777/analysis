@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Trader Cerdas Indonesia — Live Terminal</title>
+<title>GUSERA LTD Indonesia — Live Terminal</title>
 <link rel="icon" href="logo.png">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-icon.png">
@@ -100,6 +100,17 @@ Generate Data
 
 <div id="swingStatus" class="status-bar">
 Source: Twelve Data — H1 candles · Auto swing &amp; trend detection
+</div>
+
+<div class="live-alert-row">
+<label class="toggle-switch">
+<input type="checkbox" id="liveAlertToggle" onchange="onLiveAlertToggle()">
+<span class="toggle-slider"></span>
+</label>
+<div class="live-alert-text">
+<div class="live-alert-title">🔔 Live Signal Alerts</div>
+<div class="live-alert-sub" id="liveAlertSub">Auto-scan H1 tiap 5 menit & notifikasi saat signal valid muncul</div>
+</div>
 </div>
 
 </div>
