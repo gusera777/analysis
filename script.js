@@ -909,7 +909,7 @@ showToast('Backend tidak terhubung — pakai mode lokal');
 }
 } else {
 startLiveAlerts();
-if(sub) sub.textContent = 'Aktif (mode lokal) — auto-scan H1 tiap 5 menit selama tab terbuka';
+if(sub) sub.textContent = 'Aktif (mode lokal) — Auto-scan setiap 5 menit selama tab terbuka';
 if(modeTag){ modeTag.textContent = 'LOCAL'; modeTag.className = 'alert-mode-tag mode-local'; }
 showToast('Live Signal Alerts diaktifkan (mode lokal)');
 }
