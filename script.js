@@ -737,6 +737,146 @@ if(dlBtn) dlBtn.addEventListener('click', downloadHistory);
 if(clBtn) clBtn.addEventListener('click', clearHistory);
 }
 
+// ============================================================
+// alerts.js — Live Signal Alerts (Level 1)
+// Auto-scan H1 secara berkala (menggantikan klik manual "Generate Data")
+// + notifikasi sistem (Notification API) begitu ada signal BUY/SELL
+// yang benar-benar valid (lolos computeSignalValidity()).
+//
+// Catatan: berjalan selama tab/browser masih terbuka (boleh di-background,
+// screen off). Kalau browser/app benar-benar ditutup atau device di-lock
+// lama, polling akan berhenti — itu keterbatasan bawaan Level 1 (client-side
+// only, tanpa server/push backend).
+// ============================================================
+
+const LIVE_ALERT_KEY = 'xauusd_live_alert_enabled';
+const LAST_NOTIFIED_KEY = 'xauusd_last_notified_signal';
+const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 menit — aman untuk rate limit Twelve Data free tier
+
+let liveAlertTimer = null;
+
+function isNotificationSupported(){
+return 'Notification' in window;
+}
+
+async function onLiveAlertToggle(){
+const toggle = document.getElementById('liveAlertToggle');
+const sub = document.getElementById('liveAlertSub');
+if(!toggle) return;
+
+if(toggle.checked){
+if(!isNotificationSupported()){
+toggle.checked = false;
+showToast('Browser ini tidak mendukung notifikasi sistem');
+return;
+}
+
+let perm = Notification.permission;
+if(perm === 'default'){
+perm = await Notification.requestPermission();
+}
+if(perm !== 'granted'){
+toggle.checked = false;
+showToast('Izin notifikasi ditolak — aktifkan lewat pengaturan browser');
+return;
+}
+
+localStorage.setItem(LIVE_ALERT_KEY, '1');
+if(sub) sub.textContent = 'Aktif — auto-scan H1 tiap 5 menit';
+showToast('Live Signal Alerts diaktifkan');
+startLiveAlerts();
+
+} else {
+localStorage.setItem(LIVE_ALERT_KEY, '0');
+if(sub) sub.textContent = 'Auto-scan H1 tiap 5 menit & notifikasi saat signal valid muncul';
+showToast('Live Signal Alerts dimatikan');
+stopLiveAlerts();
+}
+}
+
+function startLiveAlerts(){
+if(liveAlertTimer) return;
+scanForSignal(); // langsung cek sekali saat diaktifkan
+liveAlertTimer = setInterval(scanForSignal, POLL_INTERVAL_MS);
+}
+
+function stopLiveAlerts(){
+if(liveAlertTimer){
+clearInterval(liveAlertTimer);
+liveAlertTimer = null;
+}
+}
+
+async function scanForSignal(){
+const btn = document.getElementById('autoBtn');
+if(btn && btn.disabled) return; // sedang fetch manual, jangan tabrakan
+try{
+await autoFillSwing();
+maybeNotifyValidSignal();
+} catch(e){
+// autoFillSwing sudah handle error-nya sendiri lewat swingStatus
+}
+}
+
+// Cek apakah signal saat ini benar-benar valid DAN belum pernah dinotifikasi
+// (mencegah notifikasi berulang untuk signal yang sama tiap 5 menit).
+function maybeNotifyValidSignal(){
+const result = computeSignalValidity();
+if(!result.valid) return;
+
+const trEl = document.getElementById('trend');
+const tr = trEl ? trEl.value : null;
+const confirmation = result.confirmation;
+
+const signature = `${tr}|${confirmation.time}|${Math.round(confirmation.bodyPercent * 100)}`;
+const lastSig = localStorage.getItem(LAST_NOTIFIED_KEY);
+if(signature === lastSig) return;
+
+localStorage.setItem(LAST_NOTIFIED_KEY, signature);
+fireSignalNotification(tr, confirmation);
+}
+
+function fireSignalNotification(tr, confirmation){
+const cfg = getPairConfig();
+const hi = document.getElementById('hi').value;
+const lo = document.getElementById('lo').value;
+const isBuy = tr === 'up';
+
+const title = `${isBuy ? '🟢 BUY' : '🔴 SELL'} Signal — ${cfg.label}`;
+const strongTag = confirmation.highProbability ? '🔥 Strong' : '✅ Valid';
+const body = `${strongTag} displacement (${Math.round(confirmation.bodyPercent * 100)}%) · Swing ${lo}–${hi} · EMA200 aligned`;
+
+try{
+const n = new Notification(title, {
+body,
+icon: 'logo.png',
+tag: 'xauusd-signal', // notif baru menggantikan yang lama, tidak numpuk
+renotify: true,
+});
+n.onclick = () => { window.focus(); n.close(); };
+} catch(e){
+showToast(title + ' — ' + body);
+}
+}
+
+// Resume auto-scan kalau sebelumnya sudah diaktifkan & izin masih granted
+// (dipanggil saat halaman di-load ulang).
+function restoreLiveAlertState(){
+const toggle = document.getElementById('liveAlertToggle');
+const sub = document.getElementById('liveAlertSub');
+if(!toggle) return;
+
+const wasEnabled = localStorage.getItem(LIVE_ALERT_KEY) === '1';
+if(wasEnabled && isNotificationSupported() && Notification.permission === 'granted'){
+toggle.checked = true;
+if(sub) sub.textContent = 'Aktif — auto-scan H1 tiap 5 menit';
+startLiveAlerts();
+} else if(wasEnabled){
+// Izin dicabut manual lewat pengaturan browser sejak sesi terakhir
+localStorage.setItem(LIVE_ALERT_KEY, '0');
+}
+}
+
 // ── Reset ──
 
 function resetForm(){
@@ -805,3 +945,4 @@ attachValidityListeners();
 attachHistoryControls();
 renderHistory();
 updateAnalyzeButtonState();
+restoreLiveAlertState();
