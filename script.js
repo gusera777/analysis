@@ -843,4 +843,3 @@ attachValidityListeners();
 attachHistoryControls();
 renderHistory();
 updateAnalyzeButtonState();
-restoreLiveAlertState();
